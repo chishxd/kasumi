@@ -1,11 +1,18 @@
-use lofty::{Accessor, Probe, TaggedFileExt};
-use rodio::{Decoder, OutputStream, OutputStreamBuilder, Sink};
-use serde::Serialize;
 use std::path::Path;
 use std::fs::File;
 use std::io::BufReader;
 use std::sync::Mutex;
+
 use tauri::State;
+use serde::Serialize;
+
+use rodio::{Decoder, OutputStreamBuilder, Sink};
+
+use lofty::prelude::*;
+use lofty::probe::Probe;
+use lofty::picture::MimeType;
+use base64::prelude::{Engine as _, BASE64_STANDARD};
+
 
 #[derive(Serialize)]
 #[serde(rename_all="camelCase")]
@@ -20,6 +27,38 @@ struct Track{
 
 struct AudioState {
     sink: Mutex<Sink>,
+}
+
+fn read_track_metadata(path_str: &str) -> Option<Track>{
+    let path = Path::new(path_str);
+
+    let tagged_file = Probe::open(path).ok()?.read().ok()?;
+
+    let tag = tagged_file.primary_tag()?;
+
+    let title = tag.title().as_deref().unwrap_or("Unknown Title").to_string();
+    let artist = tag.artist().as_deref().unwrap_or("Unknown Artist").to_string();
+    let album = tag.album().as_deref().unwrap_or("Unknown Album").to_string();
+
+    let properties = tagged_file.properties();
+    let duration_seconds = properties.duration().as_secs();
+
+    let cover_art = tag.pictures().first().map(|pic| {
+        let b64 = BASE64_STANDARD.encode(pic.data());
+        let mime = pic.mime_type().unwrap_or(&MimeType::Jpeg);
+
+        format!("data:{}; base64:{};", mime, b64)
+    });
+
+    Some(Track{
+        path: path_str.to_string(),
+        title,
+        artist,
+        album,
+        duration_seconds,
+        cover_art,
+    })
+
 }
 
 #[tauri::command]
