@@ -2,12 +2,17 @@
   import { invoke } from "@tauri-apps/api/core";
 
   let name = $state("");
-  let greetMsg = $state("");
+  let songPath = "/home/chish/Downloads/O-Rangrez.flac" //placeholder
 
-  async function greet(event: Event) {
-    event.preventDefault();
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsg = await invoke("greet", { name });
+  async function testAudio() {
+    console.log("Attempting to play: ", songPath);
+    try{
+      await invoke("play_local_music", {path: songPath})
+    }catch (error){
+      console.error("Rust error:", error);
+      alert("Error:" + error);
+    }
+
   }
 </script>
 
@@ -15,6 +20,10 @@
   <h1>Welcome to Kasumi</h1>
 
   <p>App should be fully transparent right now :D</p>
+
+  <button onclick={testAudio} style="padding: 10px 20px; margin-top: 20px; font-size:1.2rem;">
+    ▶ Play Music
+  </button>
 </main>
 
 <style>
