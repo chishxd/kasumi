@@ -1,8 +1,11 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
+  import { onMount } from "svelte";
+  import type { Track } from "../lib/types";
 
-  let name = $state("");
   let songPath = "/home/chish/Downloads/O-Rangrez.flac" //placeholder
+
+  let tracks = $state<Track[]>([]);
 
   async function testAudio() {
     console.log("Attempting to play: ", songPath);
@@ -14,6 +17,17 @@
     }
 
   }
+
+  onMount(
+    async () => {
+      console.log("Scanning Music Directory...");
+      try{
+         tracks = await invoke("get_library_tracks");
+      } catch (error){
+        console.error("Something went wrong: " + error);
+      }
+    }
+  )
 </script>
 
 <main class="container">
@@ -21,9 +35,20 @@
 
   <p>App should be fully transparent right now :D</p>
 
+  <div class="tracks">
+  <ul>
+    {#each tracks as track}
+      <li>{track.title} - {track.artist}</li>
+    {/each}
+  </ul>
+  </div>
+
   <button onclick={testAudio} style="padding: 10px 20px; margin-top: 20px; font-size:1.2rem;">
     ▶ Play Music
   </button>
+
+
+
 </main>
 
 <style>

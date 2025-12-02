@@ -47,7 +47,7 @@ fn read_track_metadata(path_str: &str) -> Option<Track>{
         let b64 = BASE64_STANDARD.encode(pic.data());
         let mime = pic.mime_type().unwrap_or(&MimeType::Jpeg);
 
-        format!("data:{}; base64:{};", mime, b64)
+        format!("data:{}; base64:{}", mime, b64)
     });
 
     Some(Track{
@@ -121,7 +121,7 @@ pub fn run() {
             sink: Mutex::new(sink),
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, play_local_music])
+        .invoke_handler(tauri::generate_handler![greet, play_local_music, get_library_tracks ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
