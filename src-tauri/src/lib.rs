@@ -61,6 +61,32 @@ fn read_track_metadata(path_str: &str) -> Option<Track>{
 
 }
 
+
+#[tauri::command]
+fn get_library_tracks() -> Vec<Track>{
+    let music_dir = "/home/chish/Music/";
+    
+    let mut tracks = Vec::new();
+
+    if let Ok(entries) = std::fs::read_dir(music_dir){
+        for entry in entries.flatten(){
+            let path = entry.path();
+
+            if path.is_file(){
+                if let Some(path_str) = path.to_str(){
+                    if let Some(track) = read_track_metadata(path_str){
+                        tracks.push(track);
+                    }
+                }
+
+            }
+        }
+        
+    }
+
+    tracks
+}
+
 #[tauri::command]
 fn play_local_music(path: String, state: State<'_, AudioState>) -> Result<(), String> {
     let sink = state.sink.lock().map_err(|_| "Failed to lock sink")?;
