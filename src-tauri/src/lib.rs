@@ -1,8 +1,22 @@
+use lofty::{Accessor, Probe, TaggedFileExt};
 use rodio::{Decoder, OutputStream, OutputStreamBuilder, Sink};
+use serde::Serialize;
+use std::path::Path;
 use std::fs::File;
 use std::io::BufReader;
 use std::sync::Mutex;
 use tauri::State;
+
+#[derive(Serialize)]
+#[serde(rename_all="camelCase")]
+struct Track{
+    path: String,
+    title: String,
+    artist: String,
+    album: String,
+    duration_seconds: u64,
+    cover_art: Option<String>,
+}
 
 struct AudioState {
     sink: Mutex<Sink>,
