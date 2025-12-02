@@ -18,6 +18,15 @@
     }
   }
 
+  async function pauseAudio(){
+    console.log("MUSIC PAUSED.");
+    try{
+      await invoke("pause_audio");
+    } catch (error){
+      console.error("Something went wrong: " + e);
+    }
+  }
+
   onMount(
     async () => {
       console.log("Scanning Music Directory...");
@@ -43,6 +52,10 @@
     {/each}
   </ul>
   </div>
+
+  <button onclick={pauseAudio}>
+    PAUSE MUSIC
+  </button>
 
   <!-- <button onclick={playAudio} style="padding: 10px 20px; margin-top: 20px; font-size:1.2rem;"> -->
   <!--   ▶ Play Music -->
