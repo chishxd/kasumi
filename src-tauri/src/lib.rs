@@ -88,7 +88,7 @@ fn get_library_tracks() -> Vec<Track>{
 }
 
 #[tauri::command]
-fn play_local_music(path: String, state: State<'_, AudioState>) -> Result<(), String> {
+fn play_audio(path: String, state: State<'_, AudioState>) -> Result<(), String> {
     let sink = state.sink.lock().map_err(|_| "Failed to lock sink")?;
 
     let file = File::open(&path).map_err(|e| format!("File not found: {}", e))?;
@@ -121,7 +121,7 @@ pub fn run() {
             sink: Mutex::new(sink),
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, play_local_music, get_library_tracks ])
+        .invoke_handler(tauri::generate_handler![greet, play_audio, get_library_tracks ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

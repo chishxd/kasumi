@@ -2,32 +2,33 @@
   import { invoke } from "@tauri-apps/api/core";
   import { onMount } from "svelte";
   import type { Track } from "../lib/types";
+    import { path } from "@tauri-apps/api";
 
   let songPath = "/home/chish/Downloads/O-Rangrez.flac" //placeholder
 
   let tracks = $state<Track[]>([]);
 
-  async function testAudio() {
+  async function playAudio(songPath: string) {
     console.log("Attempting to play: ", songPath);
     try{
-      await invoke("play_local_music", {path: songPath})
+      await invoke("play_audio", {path: songPath})
     }catch (error){
       console.error("Rust error:", error);
       alert("Error:" + error);
     }
-
   }
 
   onMount(
     async () => {
       console.log("Scanning Music Directory...");
       try{
-         tracks = await invoke("get_library_tracks");
+        tracks = await invoke("get_library_tracks");
       } catch (error){
-        console.error("Something went wrong: " + error);
+        console.error("Ooopsies... Something went wrong: ", error);
       }
     }
   )
+
 </script>
 
 <main class="container">
@@ -38,14 +39,14 @@
   <div class="tracks">
   <ul>
     {#each tracks as track}
-      <li>{track.title} - {track.artist}</li>
+      <li onclick={() => {playAudio(track.path)}}>{track.title} - {track.artist}</li>
     {/each}
   </ul>
   </div>
 
-  <button onclick={testAudio} style="padding: 10px 20px; margin-top: 20px; font-size:1.2rem;">
-    ▶ Play Music
-  </button>
+  <!-- <button onclick={playAudio} style="padding: 10px 20px; margin-top: 20px; font-size:1.2rem;"> -->
+  <!--   ▶ Play Music -->
+  <!-- </button> -->
 
 
 
@@ -75,6 +76,16 @@ h1{
 
 :global(html){
   background-color: transparent !important;
+}
+
+li{
+  list-style-type: none;
+  
+}
+
+
+li:hover{
+  cursor: pointer;
 }
 
 </style>
