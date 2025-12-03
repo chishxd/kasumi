@@ -132,6 +132,16 @@
     color: #f5f5f5;
     font-size: 0.85rem;
     cursor: pointer;
+    transition: 
+      transform 0.15s ease,
+      background 0.15s ease,
+      box-shadown 0.15s ease;
+  }
+
+  .player-btn:hover{
+    transform: translateY(-2px) scale(1.03);
+    background-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   }
 
   .track-scroll {
@@ -156,6 +166,10 @@
       box-shadow 0.15s ease;
   }
 
+  .track-card:hover{
+    transform: translate(-3px) scale(1.02);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+  }
   .track-grid img {
     height: 100%;
     width: 100%;
