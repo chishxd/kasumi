@@ -86,9 +86,9 @@
 
     <div class="controls">
       {#if isPlaying}
-        <button onclick={pauseAudio}>Pause Music</button>
+        <button onclick={pauseAudio} class="player-btn">Pause Music</button>
         {:else}
-         <button onclick={resumeAudio}>Resume Music</button>
+         <button onclick={resumeAudio} class="player-btn">Resume Music</button>
       {/if}
          </div>
 
@@ -117,12 +117,22 @@
   .now-title {
   font-size: 0.9rem;
   font-weight: 600;
-}
+  }
 
   .now-artist {
   font-size: 0.75rem;
   opacity: 0.7;
-}
+  }
+
+  .player-btn{
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background-color: rgba(0, 0, 0, 0.3);
+    color: #f5f5f5;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
 
   .track-scroll {
     flex: 1;
