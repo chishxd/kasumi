@@ -6,7 +6,7 @@
   let tracks = $state<Track[]>([]);
   let currentTrack = $state<Track| null>(null);
 
-  let isPlaying = $state(false);
+  let isPaused = $state(false);
 
   async function playAudio(song: Track) {
     console.log("Attempting to play: ", song.path);
@@ -14,7 +14,7 @@
     try {
       await invoke("play_audio", { path: song.path });
       currentTrack = song;
-      isPlaying = true;
+      isPaused = await invoke("is_audio_paused");
     } catch (error) {
       console.error("Rust error:", error);
       alert("Error:" + error);
@@ -25,7 +25,7 @@
     console.log("MUSIC PAUSED.");
     try {
       await invoke ("pause_audio");
-      isPlaying = false;
+      isPaused = await invoke("is_audio_paused");
     } catch (error) {
       console.error("Something went wrong: " + error);
     }
@@ -34,7 +34,7 @@
     console.log("MUSIC PAUSED.");
     try {
       await invoke("resume_audio");
-      isPlaying = true;
+      isPaused = await invoke("is_audio_paused");
     } catch (error) {
       console.error("Something went wrong: " + error);
     }
@@ -45,6 +45,7 @@
     console.log("Scanning Music Directory...");
     try {
       tracks = await invoke("get_library_tracks");
+      isPaused = await invoke("is_audio_paused");
     } catch (error) {
       console.error("Ooopsies... Something went wrong: ", error);
     }
@@ -88,12 +89,12 @@
     </div>
 
     <div class="controls">
-      {#if isPlaying}
-        <button onclick={pauseAudio} class="player-btn">PLAY</button>
-        {:else}
-         <button onclick={resumeAudio} class="player-btn">PAUSE</button>
+      {#if isPaused}
+        <button onclick={resumeAudio} class="player-btn">PLAY</button>
+      {:else}
+        <button onclick={pauseAudio} class="player-btn">PAUSE</button>
       {/if}
-         </div>
+    </div>
 
   </div>
 </main>

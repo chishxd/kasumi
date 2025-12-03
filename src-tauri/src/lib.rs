@@ -121,10 +121,12 @@ fn resume_audio(state: State<'_, AudioState>) -> Result<(), String>{
 
 }
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+fn is_audio_paused(state: State<'_, AudioState>) -> bool{
+    let sink = state.sink.lock().map_err(|_| "Failed to lock sink.");
+    
+    let is_playing = sink.expect("Could not get track info").is_paused();
+    return is_playing;
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -140,7 +142,7 @@ pub fn run() {
             sink: Mutex::new(sink),
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, play_audio, pause_audio,resume_audio,get_library_tracks])
+        .invoke_handler(tauri::generate_handler![play_audio, pause_audio,resume_audio,get_library_tracks, is_audio_paused])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
