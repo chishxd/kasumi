@@ -4,7 +4,7 @@ use std::io::BufReader;
 use std::sync::Mutex;
 
 use tauri::State;
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
 use rodio::{Decoder, OutputStreamBuilder, Sink};
 
@@ -14,7 +14,7 @@ use lofty::picture::MimeType;
 use base64::prelude::{Engine as _, BASE64_STANDARD};
 
 
-#[derive(Serialize)]
+#[derive(Clone,Serialize, Deserialize)]
 #[serde(rename_all="camelCase")]
 struct Track{
     path: String,
@@ -25,8 +25,9 @@ struct Track{
     cover_art: Option<String>,
 }
 
-struct AudioState {
-    sink: Mutex<Sink>,
+pub struct AudioState {
+    pub sink: Mutex<Sink>,
+    pub current_track: Mutex<Option<Track>>
 }
 
 //A HELPER FUNCTION
@@ -62,7 +63,6 @@ fn read_track_metadata(path_str: &str) -> Option<Track>{
 
 }
 
-
 #[tauri::command]
 fn get_library_tracks() -> Vec<Track>{
     let music_dir = "/home/chish/Music/";
@@ -89,10 +89,12 @@ fn get_library_tracks() -> Vec<Track>{
 }
 
 #[tauri::command]
-fn play_audio(path: String, state: State<'_, AudioState>) -> Result<(), String> {
+fn play_audio(track: Track, state: State<'_, AudioState>) -> Result<(), String> {
     let sink = state.sink.lock().map_err(|_| "Failed to lock sink")?;
+    let mut current = state.current_track.lock().unwrap();
+    *current = Some(track.clone());
 
-    let file = File::open(&path).map_err(|e| format!("File not found: {}", e))?;
+    let file = File::open(&track.path).map_err(|e| format!("File not found: {}", e))?;
     let reader = BufReader::new(file);
 
     let source = Decoder::new(reader).map_err(|e| format!("Codec error: {}", e))?;
@@ -102,6 +104,12 @@ fn play_audio(path: String, state: State<'_, AudioState>) -> Result<(), String> 
     sink.play();
 
     Ok(())
+}
+
+#[tauri::command]
+fn get_current_track(state: State<'_, AudioState>) -> Option<Track> {
+    let current = state.current_track.lock().unwrap();
+    current.clone()
 }
 
 #[tauri::command]
@@ -140,9 +148,10 @@ pub fn run() {
     tauri::Builder::default()
         .manage(AudioState {
             sink: Mutex::new(sink),
+            current_track: Mutex::new(None),
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![play_audio, pause_audio,resume_audio,get_library_tracks, is_audio_paused])
+        .invoke_handler(tauri::generate_handler![play_audio, pause_audio,resume_audio,get_library_tracks, is_audio_paused, get_current_track])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

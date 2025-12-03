@@ -12,8 +12,8 @@
     console.log("Attempting to play: ", song.path);
     console.log(song.coverArt?.slice(0, 100));
     try {
-      await invoke("play_audio", { path: song.path });
-      currentTrack = song;
+      await invoke("play_audio", { track: song });
+      currentTrack = await invoke("get_current_track")
       isPaused = await invoke("is_audio_paused");
     } catch (error) {
       console.error("Rust error:", error);
@@ -45,6 +45,7 @@
     console.log("Scanning Music Directory...");
     try {
       tracks = await invoke("get_library_tracks");
+      currentTrack = await invoke("get_current_track");
       isPaused = await invoke("is_audio_paused");
     } catch (error) {
       console.error("Ooopsies... Something went wrong: ", error);
