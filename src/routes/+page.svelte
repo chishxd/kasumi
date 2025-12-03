@@ -2,9 +2,6 @@
   import { invoke } from "@tauri-apps/api/core";
   import { onMount } from "svelte";
   import type { Track } from "../lib/types";
-  import { path } from "@tauri-apps/api";
-
-  let songPath = "/home/chish/Downloads/O-Rangrez.flac"; //placeholder
 
   let tracks = $state<Track[]>([]);
 
@@ -39,33 +36,35 @@
 </script>
 
 <main class="container">
-  <h1>Welcome to Kasumi</h1>
-
-  <p>App should be fully transparent right now :D</p>
-
-  <div class="track-grid">
-    {#each tracks as track, i}
-      <div
-        class="track-card"
-        onclick={() => {
-          playAudio(track);
-        }}
-      >
-        {#if track.coverArt}
-          <img src={track.coverArt} alt={track.title} />
-          {:else}
-          <div class="placeholder"> 🎵 </div>
-        {/if}
-        <!-- <p>{track.coverArt?.slice(0, 50)}</p> -->
-        <div class="overlay">
-          <p class="track-title">{track.title}</p>
-          <p class="track-artist">{track.artist}</p>
-        </div>
-      </div>
-    {/each}
-  </div>
+  <header>
+    <p>Welcome to Kasumi</p>
+  </header>
 
   <button onclick={pauseAudio}> PAUSE MUSIC </button>
+
+  <div class="track-scroll">
+    <div class="track-grid">
+      {#each tracks as track}
+        <button
+          class="track-card"
+          onclick={() => {
+            playAudio(track);
+          }}
+        >
+          {#if track.coverArt}
+            <img src={track.coverArt} alt={track.title} />
+          {:else}
+            <div class="placeholder">🎵</div>
+          {/if}
+          <!-- <p>{track.coverArt?.slice(0, 50)}</p> -->
+          <div class="overlay">
+            <p class="track-title">{track.title}</p>
+            <p class="track-artist">{track.artist}</p>
+          </div>
+        </button>
+      {/each}
+    </div>
+  </div>
 
   <!-- <button onclick={playAudio} style="padding: 10px 20px; margin-top: 20px; font-size:1.2rem;"> -->
   <!--   ▶ Play Music -->
@@ -73,6 +72,11 @@
 </main>
 
 <style>
+  .track-scroll {
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
   .track-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -81,6 +85,7 @@
   }
 
   .track-card {
+    all: unset;
     position: relative;
     border-radius: 16px;
     overflow: hidden;
@@ -104,9 +109,9 @@
     padding: 16px;
     background: linear-gradient(
       to top,
-      rgba(0,0,0,0.7),
-      rgba(0,0,0,0,0.0)
-      );
+      rgba(0, 0, 0, 0.7),
+      rgba(0, 0, 0, 0, 0)
+    );
 
     color: white;
     display: flex;
@@ -114,12 +119,12 @@
     justify-content: flex-end;
   }
 
-  .track-title{
+  .track-title {
     font-size: 1.05rem;
     font-weight: 600;
     margin: 0;
   }
-  .track-artist{
+  .track-artist {
     opacity: 0.8;
     font-size: 0.85rem;
     font-weight: 300;
@@ -134,10 +139,11 @@
     border-radius: 16px;
     margin: 20px;
     padding: 50px;
-  }
 
-  h1 {
-    color: white;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 40px);
+    overflow: hidden;
   }
 
   :global(body) {
