@@ -29,6 +29,7 @@ struct AudioState {
     sink: Mutex<Sink>,
 }
 
+//A HELPER FUNCTION
 fn read_track_metadata(path_str: &str) -> Option<Track>{
     let path = Path::new(path_str);
 
@@ -109,6 +110,16 @@ fn pause_audio(state: State<'_, AudioState>) -> Result<(), String> {
 
     Ok(())
 }
+
+#[tauri::command]
+fn resume_audio(state: State<'_, AudioState>) -> Result<(), String>{
+    let sink = state.sink.lock().map_err(|_| "Failed to lock sink")?;
+    sink.play();
+    
+    Ok(())
+
+}
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -128,7 +139,7 @@ pub fn run() {
             sink: Mutex::new(sink),
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, play_audio, pause_audio,get_library_tracks])
+        .invoke_handler(tauri::generate_handler![greet, play_audio, pause_audio,resume_audio,get_library_tracks])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -4,12 +4,14 @@
   import type { Track } from "../lib/types";
 
   let tracks = $state<Track[]>([]);
+  let isPlaying = $state(false);
 
   async function playAudio(song: Track) {
     console.log("Attempting to play: ", song.path);
     console.log(song.coverArt?.slice(0, 100));
     try {
       await invoke("play_audio", { path: song.path });
+      isPlaying = true;
     } catch (error) {
       console.error("Rust error:", error);
       alert("Error:" + error);
@@ -19,11 +21,22 @@
   async function pauseAudio() {
     console.log("MUSIC PAUSED.");
     try {
-      await invoke("pause_audio");
+      await invoke ("pause_audio");
+      isPlaying = false;
     } catch (error) {
       console.error("Something went wrong: " + error);
     }
   }
+  async function resumeAudio() {
+    console.log("MUSIC PAUSED.");
+    try {
+      await invoke("resume_audio");
+      isPlaying = true;
+    } catch (error) {
+      console.error("Something went wrong: " + error);
+    }
+  }
+
 
   onMount(async () => {
     console.log("Scanning Music Directory...");
@@ -39,8 +52,6 @@
   <header>
     <p>Welcome to Kasumi</p>
   </header>
-
-  <button onclick={pauseAudio}> PAUSE MUSIC </button>
 
   <div class="track-scroll">
     <div class="track-grid">
@@ -66,22 +77,63 @@
     </div>
   </div>
 
-  <!-- <button onclick={playAudio} style="padding: 10px 20px; margin-top: 20px; font-size:1.2rem;"> -->
-  <!--   ▶ Play Music -->
-  <!-- </button> -->
+
+  <div class="player-bar">
+    <div class="now-playing">
+      <p class="now-title">Song</p>
+      <p class="now-artist">Gian</p>
+    </div>
+
+    <div class="controls">
+      {#if isPlaying}
+        <button onclick={pauseAudio}>Pause Music</button>
+        {:else}
+         <button onclick={resumeAudio}>Resume Music</button>
+      {/if}
+         </div>
+
+  </div>
 </main>
 
 <style>
+  .player-bar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 8px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.9);
+  }
+
+  .now-playing{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .now-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+  .now-artist {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
   .track-scroll {
     flex: 1;
     overflow-x: hidden;
     overflow-y: auto;
+    padding: 20px;
   }
   .track-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
-    padding: 20px;
   }
 
   .track-card {
@@ -106,17 +158,18 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    padding: 16px;
+    padding: 8px 10px;
     background: linear-gradient(
       to top,
       rgba(0, 0, 0, 0.7),
-      rgba(0, 0, 0, 0, 0)
+      rgba(0, 0, 0, 0.0)
     );
 
     color: white;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    align-items: start;
   }
 
   .track-title {
@@ -138,7 +191,6 @@
     text-align: center;
     border-radius: 16px;
     margin: 20px;
-    padding: 50px;
 
     display: flex;
     flex-direction: column;
