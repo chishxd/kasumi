@@ -47,7 +47,7 @@ fn read_track_metadata(path_str: &str) -> Option<Track>{
         let b64 = BASE64_STANDARD.encode(pic.data());
         let mime = pic.mime_type().unwrap_or(&MimeType::Jpeg);
 
-        format!("data:{}; base64:{}", mime, b64)
+        format!("data:{};base64,{}", mime, b64)
     });
 
     Some(Track{
