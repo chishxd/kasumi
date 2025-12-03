@@ -4,6 +4,8 @@
   import type { Track } from "../lib/types";
 
   let tracks = $state<Track[]>([]);
+  let currentTrack = $state<Track| null>(null);
+
   let isPlaying = $state(false);
 
   async function playAudio(song: Track) {
@@ -11,6 +13,7 @@
     console.log(song.coverArt?.slice(0, 100));
     try {
       await invoke("play_audio", { path: song.path });
+      currentTrack = song;
       isPlaying = true;
     } catch (error) {
       console.error("Rust error:", error);
@@ -80,15 +83,15 @@
 
   <div class="player-bar">
     <div class="now-playing">
-      <p class="now-title">Song</p>
-      <p class="now-artist">Gian</p>
+      <p class="now-title">{currentTrack?.title || "No Music"}</p>
+      <p class="now-artist">{currentTrack?.artist || "No artist"}</p>
     </div>
 
     <div class="controls">
       {#if isPlaying}
-        <button onclick={pauseAudio} class="player-btn">Pause Music</button>
+        <button onclick={pauseAudio} class="player-btn">PLAY</button>
         {:else}
-         <button onclick={resumeAudio} class="player-btn">Resume Music</button>
+         <button onclick={resumeAudio} class="player-btn">PAUSE</button>
       {/if}
          </div>
 
@@ -149,6 +152,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     padding: 20px;
+    z-index: 0;
   }
   .track-grid {
     display: grid;
@@ -168,13 +172,14 @@
 
   .track-card:hover{
     transform: translate(-3px) scale(1.02);
-    box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    /* box-shadow: 0 8px 18px rgba(0,0,0,0.25); */
   }
   .track-grid img {
     height: 100%;
     width: 100%;
     object-fit: cover;
     display: block;
+    pointer-events: none;
   }
 
   .overlay {

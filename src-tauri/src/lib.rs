@@ -96,7 +96,8 @@ fn play_audio(path: String, state: State<'_, AudioState>) -> Result<(), String> 
     let reader = BufReader::new(file);
 
     let source = Decoder::new(reader).map_err(|e| format!("Codec error: {}", e))?;
-
+    
+    sink.clear();
     sink.append(source);
     sink.play();
 
