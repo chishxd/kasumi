@@ -1,8 +1,8 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
-  import { onMount, tick } from "svelte";
+  import { onMount } from "svelte";
   import type { Track } from "../lib/types";
-  // import { show } from "@tauri-apps/api/app";
+  import ContextMenu from "../components/ContextMenu.svelte";
 
   let tracks = $state<Track[]>([]);
   let currentTrack = $state<Track | null>(null);
@@ -40,7 +40,7 @@
     }
   });
 
-  function closeMenu(){
+  function closeMenu() {
     showMenu = false;
   }
 
@@ -88,12 +88,12 @@
   });
 
   onMount(() => {
-    window.addEventListener('click', closeMenu);
+    window.addEventListener("click", closeMenu);
 
     return () => {
-      window.removeEventListener('click', closeMenu);
-    }
-  })
+      window.removeEventListener("click", closeMenu);
+    };
+  });
 </script>
 
 <main class="container">
@@ -145,50 +145,10 @@
 </main>
 
 {#if showMenu}
-  <div
-    class="context-menu"
-    bind:this={menuElement}
-    style="position: absolute; top: {mousePos.y}px; left: {mousePos.x}px;"
-  >
-    <!-- TODO: Add Functions for menu items -->
-    <button class="menu-item">Add to Queue</button>
-    <button class="menu-item">Add to Playlist</button>
-    <button class="menu-item" style="color: rgba(255, 0, 0, 0.7);"
-      >Delete from Library</button
-    >
-  </div>
+  <ContextMenu track={menuTrack} position={mousePos} />
 {/if}
 
 <style>
-  .menu-item {
-    all: unset;
-    cursor: pointer;
-    padding: 8px 10px;
-    border-radius: 5px;
-    font-size: 0.9rem;
-    text-align: left;
-    transition: background-color 0.15s ease;
-  }
-  .menu-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .context-menu {
-    position: fixed;
-    z-index: 9999;
-    padding: 6px;
-    background: rgba(30, 30, 30, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(10px);
-    border-radius: 8px;
-    color: white;
-    min-width: 180px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
   .player-bar {
     display: flex;
     align-items: center;
