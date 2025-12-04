@@ -109,20 +109,18 @@ fn get_library_tracks() -> Vec<Track> {
     
     let mut tracks = Vec::new();
 
-    if let Ok(entries) = std::fs::read_dir(music_dir){
-        for entry in entries.flatten(){
+    if let Ok(entries) = std::fs::read_dir(music_dir) {
+        for entry in entries.flatten() {
             let path = entry.path();
 
-            if path.is_file(){
-                if let Some(path_str) = path.to_str(){
-                    if let Some(track) = read_track_metadata(path_str){
+            if path.is_file() {
+                if let Some(path_str) = path.to_str() {
+                    if let Some(track) = read_track_metadata(path_str) {
                         tracks.push(track);
                     }
                 }
-
             }
         }
-        
     }
 
     tracks
@@ -132,11 +130,11 @@ fn play_audio_internal(track: &Track, state: &AudioState) -> Result<(), String> 
     let sink = state.sink.lock().map_err(|_| "Failed to lock sink")?;
 
     sink.stop();
+
     let file = File::open(&track.path).map_err(|e| format!("File not found: {}", e))?;
     let reader = BufReader::new(file);
 
     let source = Decoder::new(reader).map_err(|e| format!("Codec error: {}", e))?;
-    
 
     sink.append(source);
     sink.play();
