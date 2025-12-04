@@ -118,11 +118,28 @@
     class="context-menu"
     style="position: absolute; top: {mousePos.y}px; left: {mousePos.x}px;"
   >
-    Add to queue
+<!-- TODO: Add Functions for menu items -->
+    <button class="menu-item">Add to Queue</button>
+    <button class="menu-item">Add to Playlist</button>
+    <button class="menu-item" style="color: rgba(255, 0, 0, 0.7);">Delete from Library</button>
+
   </div>
 {/if}
 
 <style>
+  .menu-item {
+    all: unset;
+    cursor: pointer;
+    padding: 8px 10px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    text-align: left;
+    transition: background-color 0.15s ease;
+  }
+  .menu-item:hover{
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
   .context-menu {
     position: fixed;
     z-index: 9999;
