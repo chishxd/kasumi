@@ -88,10 +88,18 @@
   });
 
   onMount(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if(showMenu && event.key === 'Escape'){
+        showMenu = false
+      }
+    }
+
     window.addEventListener("click", closeMenu);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       window.removeEventListener("click", closeMenu);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   });
 </script>
@@ -207,7 +215,7 @@
   .track-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 48px;
   }
 
   .track-card {
