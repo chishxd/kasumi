@@ -205,11 +205,14 @@ pub fn run() {
         })
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
+            play_audio,
             pause_audio,
             resume_audio,
             get_library_tracks,
             is_audio_paused,
-            get_current_track
+            get_current_track,
+            queue_add,
+            queue_skip,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
