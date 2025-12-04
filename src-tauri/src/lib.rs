@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{collections::VecDeque, path::Path};
 use std::fs::File;
 use std::io::BufReader;
 use std::sync::Mutex;
@@ -26,8 +26,9 @@ struct Track{
 }
 
 pub struct AudioState {
-    pub sink: Mutex<Sink>,
-    pub current_track: Mutex<Option<Track>>
+    sink: Mutex<Sink>,
+    current_track: Mutex<Option<Track>>,
+    queue: Mutex<VecDeque<Track>>
 }
 
 //A HELPER FUNCTION
@@ -61,6 +62,14 @@ fn read_track_metadata(path_str: &str) -> Option<Track>{
         cover_art,
     })
 
+}
+
+#[tauri::command]
+fn queue_add(track: Track, state: State<'_, AudioState>) -> Result<(), String>{
+    // let sink = state.sink.lock().map_err(|_| "Failed to lock sink")?;
+    let mut queue = state.queue.lock().map_err(|_| "Failed to lock queue")?;
+    queue.push_back(track);
+    Ok(())
 }
 
 #[tauri::command]
@@ -99,7 +108,7 @@ fn play_audio(track: Track, state: State<'_, AudioState>) -> Result<(), String> 
 
     let source = Decoder::new(reader).map_err(|e| format!("Codec error: {}", e))?;
     
-    sink.clear();
+    sink.stop();
     sink.append(source);
     sink.play();
 
