@@ -83,7 +83,28 @@ fn queue_add(track: Track, state: State<'_, AudioState>) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn get_library_tracks() -> Vec<Track>{
+fn queue_skip(state: State<'_, AudioState>) -> Result<Track, String> {
+    let mut queue = state.queue.lock().map_err(|_| "Failed to lock queue")?;
+    let next_track = match queue.pop_front() {
+        Some(t) => t,
+        None => return Err("Empty queue".into()),
+    };
+    drop(queue);
+    {
+        let mut current = state
+            .current_track
+            .lock()
+            .map_err(|_| "Failed to lock current_track")?;
+        *current = Some(next_track.clone());
+    }
+
+    play_audio_internal(&next_track, &state)?;
+
+    Ok(next_track)
+}
+
+#[tauri::command]
+fn get_library_tracks() -> Vec<Track> {
     let music_dir = "/home/chish/Music/";
     
     let mut tracks = Vec::new();
