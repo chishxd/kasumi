@@ -2,18 +2,31 @@
   import { invoke } from "@tauri-apps/api/core";
   import { onMount } from "svelte";
   import type { Track } from "../lib/types";
+  // import { show } from "@tauri-apps/api/app";
 
   let tracks = $state<Track[]>([]);
-  let currentTrack = $state<Track| null>(null);
+  let currentTrack = $state<Track | null>(null);
+  let mousePos = $state({ x: 0, y: 0 });
+  let menuTrack = $state<Track | null>(null);
+  let showMenu = $state<boolean>(false);
 
   let isPaused = $state(false);
+
+  function handleContext(event: MouseEvent, track: Track) {
+    // event.preventDefault()
+    menuTrack = track;
+    mousePos.x = event.clientX;
+    mousePos.y = event.clientY;
+    showMenu = true;
+    console.log(`Clicked at: ${mousePos.x},${mousePos.y}`);
+  }
 
   async function playAudio(song: Track) {
     console.log("Attempting to play: ", song.path);
     console.log(song.coverArt?.slice(0, 100));
     try {
       await invoke("play_audio", { track: song });
-      currentTrack = await invoke("get_current_track")
+      currentTrack = await invoke("get_current_track");
       isPaused = await invoke("is_audio_paused");
     } catch (error) {
       console.error("Rust error:", error);
@@ -24,7 +37,7 @@
   async function pauseAudio() {
     console.log("MUSIC PAUSED.");
     try {
-      await invoke ("pause_audio");
+      await invoke("pause_audio");
       isPaused = await invoke("is_audio_paused");
     } catch (error) {
       console.error("Something went wrong: " + error);
