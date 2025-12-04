@@ -93,9 +93,9 @@
             <p class="track-artist">{track.artist}</p>
           </div>
         </button>
-      {/each} 
+      {/each}
     </div>
-  </div> 
+  </div>
 
   <div class="player-bar">
     <div class="now-playing">
@@ -112,19 +112,31 @@
     </div>
   </div>
 </main>
+
 {#if showMenu}
-        <div
-          class="context-menu"
-          style="position: absolute; top: {mousePos.y}px; left: {mousePos.x}px; background: white;"
-        >
-          Add to queue
-        </div>
-      {/if}
+  <div
+    class="context-menu"
+    style="position: absolute; top: {mousePos.y}px; left: {mousePos.x}px;"
+  >
+    Add to queue
+  </div>
+{/if}
 
 <style>
-  .context-menu{
+  .context-menu {
     position: fixed;
     z-index: 9999;
+    padding: 6px;
+    background: rgba(30, 30, 30, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    color: white;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .player-bar {
