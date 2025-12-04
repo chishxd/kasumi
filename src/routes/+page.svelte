@@ -13,7 +13,7 @@
   let isPaused = $state(false);
 
   function handleContext(event: MouseEvent, track: Track) {
-    // event.preventDefault()
+    event.preventDefault();
     menuTrack = track;
     mousePos.x = event.clientX;
     mousePos.y = event.clientY;
@@ -53,7 +53,6 @@
     }
   }
 
-
   onMount(async () => {
     console.log("Scanning Music Directory...");
     try {
@@ -79,6 +78,9 @@
           onclick={() => {
             playAudio(track);
           }}
+          oncontextmenu={(e) => {
+            handleContext(e, track);
+          }}
         >
           {#if track.coverArt}
             <img src={track.coverArt} alt={track.title} />
@@ -91,10 +93,9 @@
             <p class="track-artist">{track.artist}</p>
           </div>
         </button>
-      {/each}
+      {/each} 
     </div>
-  </div>
-
+  </div> 
 
   <div class="player-bar">
     <div class="now-playing">
@@ -109,12 +110,24 @@
         <button onclick={pauseAudio} class="player-btn">PAUSE</button>
       {/if}
     </div>
-
   </div>
 </main>
+{#if showMenu}
+        <div
+          class="context-menu"
+          style="position: absolute; top: {mousePos.y}px; left: {mousePos.x}px; background: white;"
+        >
+          Add to queue
+        </div>
+      {/if}
 
 <style>
-  .player-bar{
+  .context-menu{
+    position: fixed;
+    z-index: 9999;
+  }
+
+  .player-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -122,10 +135,10 @@
     padding: 8px 14px;
     border-top: 1px solid rgba(255, 255, 255, 0.25);
     font-size: 0.9rem;
-    color: rgba(255,255,255,0.9);
+    color: rgba(255, 255, 255, 0.9);
   }
 
-  .now-playing{
+  .now-playing {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -133,16 +146,16 @@
   }
 
   .now-title {
-  font-size: 0.9rem;
-  font-weight: 600;
+    font-size: 0.9rem;
+    font-weight: 600;
   }
 
   .now-artist {
-  font-size: 0.75rem;
-  opacity: 0.7;
+    font-size: 0.75rem;
+    opacity: 0.7;
   }
 
-  .player-btn{
+  .player-btn {
     padding: 6px 14px;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.4);
@@ -150,13 +163,13 @@
     color: #f5f5f5;
     font-size: 0.85rem;
     cursor: pointer;
-    transition: 
+    transition:
       transform 0.15s ease,
       background 0.15s ease,
       box-shadown 0.15s ease;
   }
 
-  .player-btn:hover{
+  .player-btn:hover {
     transform: translateY(-2px) scale(1.03);
     background-color: rgba(255, 255, 255, 0.15);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
@@ -185,7 +198,7 @@
       box-shadow 0.15s ease;
   }
 
-  .track-card:hover{
+  .track-card:hover {
     transform: translate(-3px) scale(1.02);
     /* box-shadow: 0 8px 18px rgba(0,0,0,0.25); */
   }
@@ -203,11 +216,7 @@
     left: 0;
     width: 100%;
     padding: 8px 10px;
-    background: linear-gradient(
-      to top,
-      rgba(0, 0, 0, 0.7),
-      rgba(0, 0, 0, 0.0)
-    );
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
 
     color: white;
     display: flex;
