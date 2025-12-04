@@ -106,7 +106,7 @@ fn queue_skip(state: State<'_, AudioState>) -> Result<Track, String> {
 #[tauri::command]
 fn get_library_tracks() -> Vec<Track> {
     let music_dir = "/home/chish/Music/";
-    
+
     let mut tracks = Vec::new();
 
     if let Ok(entries) = std::fs::read_dir(music_dir) {
@@ -201,9 +201,16 @@ pub fn run() {
         .manage(AudioState {
             sink: Mutex::new(sink),
             current_track: Mutex::new(None),
+            queue: Mutex::new(VecDeque::new()),
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![play_audio, pause_audio,resume_audio,get_library_tracks, is_audio_paused, get_current_track])
+        .invoke_handler(tauri::generate_handler![
+            pause_audio,
+            resume_audio,
+            get_library_tracks,
+            is_audio_paused,
+            get_current_track
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
