@@ -124,6 +124,23 @@ fn play_audio_internal(track: &Track, state: &AudioState) -> Result<(), String> 
 }
 
 #[tauri::command]
+fn play_audio(track: Track, state: State<'_, AudioState>) -> Result<(), String> {
+    {
+        let mut queue = state.queue.lock().map_err(|_| "Failed to lock queue")?;
+        queue.clear();
+    }
+    {
+        let mut current = state
+            .current_track
+            .lock()
+            .map_err(|_| "Failed to lock current_track")?;
+        *current = Some(track.clone());
+    }
+
+    play_audio_internal(&track, &state)
+}
+
+#[tauri::command]
 fn get_current_track(state: State<'_, AudioState>) -> Option<Track> {
     let current = state.current_track.lock().unwrap();
     current.clone()
