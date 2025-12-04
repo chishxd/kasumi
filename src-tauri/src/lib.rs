@@ -75,7 +75,7 @@ fn read_track_metadata(path_str: &str) -> Option<Track> {
 }
 
 #[tauri::command]
-fn queue_add(track: Track, state: State<'_, AudioState>) -> Result<(), String>{
+fn queue_add(track: Track, state: State<'_, AudioState>) -> Result<(), String> {
     // let sink = state.sink.lock().map_err(|_| "Failed to lock sink")?;
     let mut queue = state.queue.lock().map_err(|_| "Failed to lock queue")?;
     queue.push_back(track);
@@ -107,18 +107,16 @@ fn get_library_tracks() -> Vec<Track>{
     tracks
 }
 
-#[tauri::command]
-fn play_audio(track: Track, state: State<'_, AudioState>) -> Result<(), String> {
+fn play_audio_internal(track: &Track, state: &AudioState) -> Result<(), String> {
     let sink = state.sink.lock().map_err(|_| "Failed to lock sink")?;
-    let mut current = state.current_track.lock().unwrap();
-    *current = Some(track.clone());
 
+    sink.stop();
     let file = File::open(&track.path).map_err(|e| format!("File not found: {}", e))?;
     let reader = BufReader::new(file);
 
     let source = Decoder::new(reader).map_err(|e| format!("Codec error: {}", e))?;
     
-    sink.stop();
+
     sink.append(source);
     sink.play();
 
