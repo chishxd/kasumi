@@ -40,6 +40,10 @@
     }
   });
 
+  function closeMenu(){
+    showMenu = false;
+  }
+
   async function playAudio(song: Track) {
     console.log("Attempting to play: ", song.path);
     console.log(song.coverArt?.slice(0, 100));
@@ -82,6 +86,14 @@
       console.error("Ooopsies... Something went wrong: ", error);
     }
   });
+
+  onMount(() => {
+    window.addEventListener('click', closeMenu);
+
+    return () => {
+      window.removeEventListener('click', closeMenu);
+    }
+  })
 </script>
 
 <main class="container">
