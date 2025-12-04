@@ -155,18 +155,17 @@ fn pause_audio(state: State<'_, AudioState>) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn resume_audio(state: State<'_, AudioState>) -> Result<(), String>{
+fn resume_audio(state: State<'_, AudioState>) -> Result<(), String> {
     let sink = state.sink.lock().map_err(|_| "Failed to lock sink")?;
     sink.play();
-    
-    Ok(())
 
+    Ok(())
 }
 
 #[tauri::command]
-fn is_audio_paused(state: State<'_, AudioState>) -> bool{
+fn is_audio_paused(state: State<'_, AudioState>) -> bool {
     let sink = state.sink.lock().map_err(|_| "Failed to lock sink.");
-    
+
     let is_playing = sink.expect("Could not get track info").is_paused();
     return is_playing;
 }
