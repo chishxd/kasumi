@@ -1,6 +1,6 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import type { Track } from "../lib/types";
   // import { show } from "@tauri-apps/api/app";
 
@@ -12,14 +12,33 @@
 
   let isPaused = $state(false);
 
-  function handleContext(event: MouseEvent, track: Track) {
+  let menuElement = $state<HTMLDivElement | undefined>(undefined);
+
+  async function handleContext(event: MouseEvent, track: Track) {
     event.preventDefault();
+
     menuTrack = track;
     mousePos.x = event.clientX;
     mousePos.y = event.clientY;
     showMenu = true;
     console.log(`Clicked at: ${mousePos.x},${mousePos.y}`);
   }
+
+  $effect(() => {
+    if (showMenu && menuElement) {
+      let menuWidth = menuElement.offsetWidth;
+      let menuHeight = menuElement.offsetHeight;
+      let windowWidth = window.innerWidth;
+      let windowHeigth = window.innerHeight;
+
+      if (mousePos.x + menuWidth > windowWidth) {
+        mousePos.x = windowWidth - menuWidth - 5;
+      }
+      if (mousePos.y + menuHeight > windowHeigth) {
+        mousePos.y = windowHeigth - menuHeight - 5;
+      }
+    }
+  });
 
   async function playAudio(song: Track) {
     console.log("Attempting to play: ", song.path);
@@ -116,13 +135,15 @@
 {#if showMenu}
   <div
     class="context-menu"
+    bind:this={menuElement}
     style="position: absolute; top: {mousePos.y}px; left: {mousePos.x}px;"
   >
-<!-- TODO: Add Functions for menu items -->
+    <!-- TODO: Add Functions for menu items -->
     <button class="menu-item">Add to Queue</button>
     <button class="menu-item">Add to Playlist</button>
-    <button class="menu-item" style="color: rgba(255, 0, 0, 0.7);">Delete from Library</button>
-
+    <button class="menu-item" style="color: rgba(255, 0, 0, 0.7);"
+      >Delete from Library</button
+    >
   </div>
 {/if}
 
@@ -136,7 +157,7 @@
     text-align: left;
     transition: background-color 0.15s ease;
   }
-  .menu-item:hover{
+  .menu-item:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
 
