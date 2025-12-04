@@ -1,22 +1,21 @@
-use std::{collections::VecDeque, path::Path};
 use std::fs::File;
 use std::io::BufReader;
 use std::sync::Mutex;
+use std::{collections::VecDeque, path::Path};
 
+use serde::{Deserialize, Serialize};
 use tauri::State;
-use serde::{Serialize, Deserialize};
 
 use rodio::{Decoder, OutputStreamBuilder, Sink};
 
+use base64::prelude::{Engine as _, BASE64_STANDARD};
+use lofty::picture::MimeType;
 use lofty::prelude::*;
 use lofty::probe::Probe;
-use lofty::picture::MimeType;
-use base64::prelude::{Engine as _, BASE64_STANDARD};
 
-
-#[derive(Clone,Serialize, Deserialize)]
-#[serde(rename_all="camelCase")]
-struct Track{
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Track {
     path: String,
     title: String,
     artist: String,
@@ -28,20 +27,32 @@ struct Track{
 pub struct AudioState {
     sink: Mutex<Sink>,
     current_track: Mutex<Option<Track>>,
-    queue: Mutex<VecDeque<Track>>
+    queue: Mutex<VecDeque<Track>>,
 }
 
 //A HELPER FUNCTION
-fn read_track_metadata(path_str: &str) -> Option<Track>{
+fn read_track_metadata(path_str: &str) -> Option<Track> {
     let path = Path::new(path_str);
 
     let tagged_file = Probe::open(path).ok()?.read().ok()?;
 
     let tag = tagged_file.primary_tag()?;
 
-    let title = tag.title().as_deref().unwrap_or("Unknown Title").to_string();
-    let artist = tag.artist().as_deref().unwrap_or("Unknown Artist").to_string();
-    let album = tag.album().as_deref().unwrap_or("Unknown Album").to_string();
+    let title = tag
+        .title()
+        .as_deref()
+        .unwrap_or("Unknown Title")
+        .to_string();
+    let artist = tag
+        .artist()
+        .as_deref()
+        .unwrap_or("Unknown Artist")
+        .to_string();
+    let album = tag
+        .album()
+        .as_deref()
+        .unwrap_or("Unknown Album")
+        .to_string();
 
     let properties = tagged_file.properties();
     let duration_seconds = properties.duration().as_secs();
@@ -53,7 +64,7 @@ fn read_track_metadata(path_str: &str) -> Option<Track>{
         format!("data:{};base64,{}", mime, b64)
     });
 
-    Some(Track{
+    Some(Track {
         path: path_str.to_string(),
         title,
         artist,
@@ -61,7 +72,6 @@ fn read_track_metadata(path_str: &str) -> Option<Track>{
         duration_seconds,
         cover_art,
     })
-
 }
 
 #[tauri::command]
