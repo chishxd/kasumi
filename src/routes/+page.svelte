@@ -7,7 +7,7 @@
   import TrackGrid from "../components/TrackGrid.svelte";
   import PlayerBar from "../components/PlayerBar.svelte";
   import { listen } from "@tauri-apps/api/event";
-  import { open } from '@tauri-apps/plugin-dialog';
+  import { open } from "@tauri-apps/plugin-dialog";
   import type { Store } from "@tauri-apps/plugin-store";
 
   let tracks = $state<Track[]>([]);
@@ -15,9 +15,9 @@
   let mousePos = $state({ x: 0, y: 0 });
   let menuTrack = $state<Track | null>(null);
   let showMenu = $state<boolean>(false);
-  let store :Store;
+  let store: Store;
   let musicDir: string | null = null;
-  let showFolderPicker: boolean = false;
+  let showFolderPicker: boolean = $state(false);
 
   let isPaused = $state(false);
 
@@ -111,7 +111,7 @@
       multiple: false,
     });
 
-    if(typeof dir === "string"){
+    if (typeof dir === "string") {
       musicDir = dir;
       await store.set("musicDir", dir);
       await store.save();
@@ -174,15 +174,22 @@
     <p>Welcome to Kasumi</p>
   </header>
 
-  <TrackGrid {tracks} onPlay={playAudio} onMenu={handleContext} />
+  {#if showFolderPicker}
+    <div>
+      <h1>SELECCT MUSIC FOLDER</h1>
+      <button onclick={chooseDir}>Choose</button>
+    </div>
+  {:else}
+    <TrackGrid {tracks} onPlay={playAudio} onMenu={handleContext} />
 
-  <PlayerBar
-    {currentTrack}
-    {isPaused}
-    onPause={pauseAudio}
-    onResume={resumeAudio}
-    onNext={queueSkip}
-  />
+    <PlayerBar
+      {currentTrack}
+      {isPaused}
+      onPause={pauseAudio}
+      onResume={resumeAudio}
+      onNext={queueSkip}
+    />
+  {/if}
 </main>
 
 {#if showMenu}
