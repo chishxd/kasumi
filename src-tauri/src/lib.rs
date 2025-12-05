@@ -2,9 +2,10 @@ use std::fs::File;
 use std::io::BufReader;
 use std::sync::Mutex;
 use std::{collections::VecDeque, path::Path};
+use tauri::{Emitter, Manager};
 
 use serde::{Deserialize, Serialize};
-use tauri::State;
+use tauri::{AppHandle, State};
 
 use rodio::{Decoder, OutputStreamBuilder, Sink};
 
@@ -189,6 +190,32 @@ fn is_audio_paused(state: State<'_, AudioState>) -> bool {
     return is_playing;
 }
 
+fn start_autostart_loop(app_handle: AppHandle) {
+    tauri::async_runtime::spawn(async move {
+        loop {
+            {
+                let state = app_handle.state::<AudioState>();
+                let sink = state.sink.lock().unwrap();
+                if sink.empty() {
+                    drop(sink);
+                    let mut queue = state.queue.lock().unwrap();
+                    if let Some(next_track) = queue.pop_front() {
+                        drop(queue);
+                        {
+                            let mut current = state.current_track.lock().unwrap();
+                            *current = Some(next_track.clone());
+                        }
+
+                        let _ = play_audio_internal(&next_track, &state);
+                        let _ = app_handle.emit("autoplay_next", next_track);
+                    }
+                }
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+        }
+    });
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let stream = OutputStreamBuilder::open_default_stream().unwrap();
@@ -202,6 +229,10 @@ pub fn run() {
             sink: Mutex::new(sink),
             current_track: Mutex::new(None),
             queue: Mutex::new(VecDeque::new()),
+        })
+        .setup(|app| {
+            start_autostart_loop(app.handle().clone());
+            Ok(())
         })
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
