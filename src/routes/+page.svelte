@@ -5,6 +5,7 @@
   import ContextMenu from "../components/ContextMenu.svelte";
   import TrackGrid from "../components/TrackGrid.svelte";
   import PlayerBar from "../components/PlayerBar.svelte";
+  import { listen } from "@tauri-apps/api/event";
 
   let tracks = $state<Track[]>([]);
   let currentTrack = $state<Track | null>(null);
@@ -78,18 +79,18 @@
     }
   }
   async function queueAdd(song: Track) {
-    console.log(`Added ${song.title} to queue`)
-    try{
-      await invoke("queue_add", {track: song});
-    } catch (error){
+    console.log(`Added ${song.title} to queue`);
+    try {
+      await invoke("queue_add", { track: song });
+    } catch (error) {
       console.error("Failed to add song to queue" + error);
     }
   }
   async function queueSkip() {
     console.log("Skipping");
-    try{
-      await invoke("queue_skip")
-    } catch (error){
+    try {
+      await invoke("queue_skip");
+    } catch (error) {
       console.error("Failed to skip track" + error);
     }
   }
@@ -100,6 +101,18 @@
       tracks = await invoke("get_library_tracks");
       currentTrack = await invoke("get_current_track");
       isPaused = await invoke("is_audio_paused");
+
+      const unlisten = await listen<Track>("autoplay_next", (event) => {
+        const nextTrack = event.payload;
+        console.log("Autoplay is now playing: ", nextTrack.title);
+        
+        currentTrack = nextTrack;
+        isPaused = false;
+
+        return ()=> {
+          unlisten();
+        }
+      });
     } catch (error) {
       console.error("Ooopsies... Something went wrong: ", error);
     }
@@ -139,7 +152,12 @@
 </main>
 
 {#if showMenu}
-  <ContextMenu track={menuTrack} position={mousePos} onQueueAdd={queueAdd}/>
+  <ContextMenu
+    track={menuTrack}
+    position={mousePos}
+    onQueueAdd={queueAdd}
+    onClose={closeMenu}
+  />
 {/if}
 
 <style>

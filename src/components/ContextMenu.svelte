@@ -1,10 +1,11 @@
 <script lang="ts">
   import type { Track } from "$lib/types";
 
-  let { track, position, onQueueAdd } = $props<{
+  let { track, position, onQueueAdd, onClose } = $props<{
     track: Track | null;
     position: { x: number; y: number };
     onQueueAdd?: (track: Track) => void;
+    onClose: () => void;
   }>();
 
   function handleQueueAdd(event: MouseEvent){
@@ -12,6 +13,7 @@
     if(track && onQueueAdd){
       onQueueAdd(track);
     }
+    onClose();
   }
 
   let menuElement = $state<HTMLDivElement | undefined>(undefined);
@@ -39,8 +41,8 @@
 >
   <!-- TODO: Add Functions for menu items -->
   <button class="menu-item" onclick={handleQueueAdd}>Add to Queue</button>
-  <button class="menu-item">Add to Playlist</button>
-  <button class="menu-item" style="color: rgba(255, 0, 0, 0.7);"
+  <button class="menu-item" onclick={onClose}>Add to Playlist</button>
+  <button class="menu-item" style="color: rgba(255, 0, 0, 0.7);" onclick={onClose}
     >Delete from Library</button
   >
 </div>
