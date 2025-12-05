@@ -105,12 +105,10 @@ fn queue_skip(state: State<'_, AudioState>) -> Result<Track, String> {
 }
 
 #[tauri::command]
-fn get_library_tracks() -> Vec<Track> {
-    let music_dir = "/home/chish/Music/";
-
+fn get_library_tracks(path: String) -> Vec<Track> {
     let mut tracks = Vec::new();
 
-    if let Ok(entries) = std::fs::read_dir(music_dir) {
+    if let Ok(entries) = std::fs::read_dir(&path) {
         for entry in entries.flatten() {
             let path = entry.path();
 
@@ -225,6 +223,8 @@ pub fn run() {
     let sink = Sink::connect_new(&stream_ptr.mixer());
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_store::Builder::new().build())
         .manage(AudioState {
             sink: Mutex::new(sink),
             current_track: Mutex::new(None),
