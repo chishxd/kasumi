@@ -1,11 +1,12 @@
 <script lang="ts">
   import type { Track } from "$lib/types";
 
-  let { currentTrack, isPaused, onPause, onResume } = $props<{
+  let { currentTrack, isPaused, onPause, onResume, onNext } = $props<{
     currentTrack: Track | null;
     isPaused: boolean;
     onPause: () => void;
     onResume: () => void;
+    onNext: () => void;
   }>();
 </script>
 
@@ -21,6 +22,7 @@
     {:else}
       <button onclick={onPause} class="player-btn">PAUSE</button>
     {/if}
+    <button onclick={onNext} class="player-btn">NEXT</button>
   </div>
 </div>
 

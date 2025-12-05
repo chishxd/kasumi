@@ -85,6 +85,14 @@
       console.error("Failed to add song to queue" + error);
     }
   }
+  async function queueSkip() {
+    console.log("Skipping");
+    try{
+      await invoke("queue_skip")
+    } catch (error){
+      console.error("Failed to skip track" + error);
+    }
+  }
 
   onMount(async () => {
     console.log("Scanning Music Directory...");
@@ -126,6 +134,7 @@
     {isPaused}
     onPause={pauseAudio}
     onResume={resumeAudio}
+    onNext={queueSkip}
   />
 </main>
 
