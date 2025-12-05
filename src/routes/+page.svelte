@@ -3,7 +3,7 @@
   import { onMount } from "svelte";
   import type { Track } from "../lib/types";
   import ContextMenu from "../components/ContextMenu.svelte";
-  import TrackCard from "../components/TrackCard.svelte";
+  import TrackGrid from "../components/TrackGrid.svelte";
 
   let tracks = $state<Track[]>([]);
   let currentTrack = $state<Track | null>(null);
@@ -110,13 +110,7 @@
     <p>Welcome to Kasumi</p>
   </header>
 
-  <div class="track-scroll">
-    <div class="track-grid">
-      {#each tracks as track}
-        <TrackCard {track} onPlay={playAudio} onContextMenu={handleContext} />
-      {/each}
-    </div>
-  </div>
+  <TrackGrid {tracks} onPlay={playAudio} onMenu={handleContext} />
 
   <div class="player-bar">
     <div class="now-playing">
@@ -185,19 +179,6 @@
     transform: translateY(-2px) scale(1.03);
     background-color: rgba(255, 255, 255, 0.15);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-  }
-
-  .track-scroll {
-    flex: 1;
-    overflow-x: hidden;
-    overflow-y: auto;
-    padding: 20px;
-    z-index: 0;
-  }
-  .track-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 48px;
   }
 
   .container {
