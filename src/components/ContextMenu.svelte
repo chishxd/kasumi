@@ -1,10 +1,18 @@
 <script lang="ts">
   import type { Track } from "$lib/types";
 
-  let { track, position } = $props<{
+  let { track, position, onQueueAdd } = $props<{
     track: Track | null;
     position: { x: number; y: number };
+    onQueueAdd?: (track: Track) => void;
   }>();
+
+  function handleQueueAdd(event: MouseEvent){
+    event.stopPropagation();
+    if(track && onQueueAdd){
+      onQueueAdd(track);
+    }
+  }
 
   let menuElement = $state<HTMLDivElement | undefined>(undefined);
   $effect(() => {
@@ -30,7 +38,7 @@
   style="position: absolute; top: {position.y}px; left: {position.x}px;"
 >
   <!-- TODO: Add Functions for menu items -->
-  <button class="menu-item">Add to Queue</button>
+  <button class="menu-item" onclick={handleQueueAdd}>Add to Queue</button>
   <button class="menu-item">Add to Playlist</button>
   <button class="menu-item" style="color: rgba(255, 0, 0, 0.7);"
     >Delete from Library</button

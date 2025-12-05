@@ -77,6 +77,14 @@
       console.error("Something went wrong: " + error);
     }
   }
+  async function queueAdd(song: Track) {
+    console.log(`Added ${song.title} to queue`)
+    try{
+      await invoke("queue_add", {track: song});
+    } catch (error){
+      console.error("Failed to add song to queue" + error);
+    }
+  }
 
   onMount(async () => {
     console.log("Scanning Music Directory...");
@@ -122,7 +130,7 @@
 </main>
 
 {#if showMenu}
-  <ContextMenu track={menuTrack} position={mousePos} />
+  <ContextMenu track={menuTrack} position={mousePos} onQueueAdd={queueAdd}/>
 {/if}
 
 <style>
