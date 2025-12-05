@@ -1,17 +1,23 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
   import { onMount } from "svelte";
+  import { load } from "@tauri-apps/plugin-store";
   import type { Track } from "../lib/types";
   import ContextMenu from "../components/ContextMenu.svelte";
   import TrackGrid from "../components/TrackGrid.svelte";
   import PlayerBar from "../components/PlayerBar.svelte";
   import { listen } from "@tauri-apps/api/event";
+  import { open } from '@tauri-apps/plugin-dialog';
+  import type { Store } from "@tauri-apps/plugin-store";
 
   let tracks = $state<Track[]>([]);
   let currentTrack = $state<Track | null>(null);
   let mousePos = $state({ x: 0, y: 0 });
   let menuTrack = $state<Track | null>(null);
   let showMenu = $state<boolean>(false);
+  let store :Store;
+  let musicDir: string | null = null;
+  let showFolderPicker: boolean = false;
 
   let isPaused = $state(false);
 
@@ -95,23 +101,51 @@
     }
   }
 
+  async function loadTracks(dir: string) {
+    tracks = await invoke("get_library_tracks", { path: dir });
+  }
+
+  async function chooseDir() {
+    const dir = await open({
+      directory: true,
+      multiple: false,
+    });
+
+    if(typeof dir === "string"){
+      musicDir = dir;
+      await store.set("musicDir", dir);
+      await store.save();
+
+      showFolderPicker = false;
+      loadTracks(musicDir);
+    }
+  }
   onMount(async () => {
     console.log("Scanning Music Directory...");
     try {
-      tracks = await invoke("get_library_tracks");
+      store = await load("settings.json");
+
+      musicDir = (await store.get<string>("musicDir")) ?? null;
+
+      if (!musicDir) {
+        showFolderPicker = true;
+      } else {
+        loadTracks(musicDir);
+      }
+
       currentTrack = await invoke("get_current_track");
       isPaused = await invoke("is_audio_paused");
 
       const unlisten = await listen<Track>("autoplay_next", (event) => {
         const nextTrack = event.payload;
         console.log("Autoplay is now playing: ", nextTrack.title);
-        
+
         currentTrack = nextTrack;
         isPaused = false;
 
-        return ()=> {
+        return () => {
           unlisten();
-        }
+        };
       });
     } catch (error) {
       console.error("Ooopsies... Something went wrong: ", error);
