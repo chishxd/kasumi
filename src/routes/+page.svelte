@@ -3,6 +3,7 @@
   import { onMount } from "svelte";
   import type { Track } from "../lib/types";
   import ContextMenu from "../components/ContextMenu.svelte";
+  import TrackCard from "../components/TrackCard.svelte";
 
   let tracks = $state<Track[]>([]);
   let currentTrack = $state<Track | null>(null);
@@ -89,8 +90,8 @@
 
   onMount(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if(showMenu && event.key === 'Escape'){
-        showMenu = false
+      if (showMenu && event.key === "Escape") {
+        showMenu = false;
       }
     }
 
@@ -99,7 +100,7 @@
 
     return () => {
       window.removeEventListener("click", closeMenu);
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   });
 </script>
@@ -112,26 +113,7 @@
   <div class="track-scroll">
     <div class="track-grid">
       {#each tracks as track}
-        <button
-          class="track-card"
-          onclick={() => {
-            playAudio(track);
-          }}
-          oncontextmenu={(e) => {
-            handleContext(e, track);
-          }}
-        >
-          {#if track.coverArt}
-            <img src={track.coverArt} alt={track.title} />
-          {:else}
-            <div class="placeholder">🎵</div>
-          {/if}
-          <!-- <p>{track.coverArt?.slice(0, 50)}</p> -->
-          <div class="overlay">
-            <p class="track-title">{track.title}</p>
-            <p class="track-artist">{track.artist}</p>
-          </div>
-        </button>
+        <TrackCard {track} onPlay={playAudio} onContextMenu={handleContext} />
       {/each}
     </div>
   </div>
@@ -216,55 +198,6 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 48px;
-  }
-
-  .track-card {
-    all: unset;
-    position: relative;
-    border-radius: 16px;
-    overflow: hidden;
-    transition:
-      transform 0.15s ease,
-      box-shadow 0.15s ease;
-  }
-
-  .track-card:hover {
-    transform: translate(-3px) scale(1.02);
-    /* box-shadow: 0 8px 18px rgba(0,0,0,0.25); */
-  }
-  .track-grid img {
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
-    display: block;
-    pointer-events: none;
-  }
-
-  .overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 8px 10px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
-
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: start;
-  }
-
-  .track-title {
-    font-size: 1.05rem;
-    font-weight: 600;
-    margin: 0;
-  }
-  .track-artist {
-    opacity: 0.8;
-    font-size: 0.85rem;
-    font-weight: 300;
-    margin-top: 2px;
   }
 
   .container {
