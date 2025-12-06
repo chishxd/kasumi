@@ -29,6 +29,7 @@ pub struct AudioState {
     sink: Mutex<Sink>,
     current_track: Mutex<Option<Track>>,
     queue: Mutex<VecDeque<Track>>,
+    history: Mutex<Vec<Track>>,
 }
 
 //A HELPER FUNCTION
@@ -96,12 +97,35 @@ fn queue_skip(state: State<'_, AudioState>) -> Result<Track, String> {
             .current_track
             .lock()
             .map_err(|_| "Failed to lock current_track")?;
+        let mut history = state.history.lock().unwrap();
+
+        if let Some(prev) = current.clone() {
+            history.push(prev);
+        }
         *current = Some(next_track.clone());
     }
 
     play_audio_internal(&next_track, &state)?;
 
     Ok(next_track)
+}
+
+#[tauri::command]
+fn play_previous(state: State<'_, AudioState>) -> Result<Track, String> {
+    let mut history = state.history.lock().map_err(|_| "Failed to lock history")?;
+
+    let previous = match history.pop() {
+        Some(t) => t,
+        None => return Err("No Previous Track".into()),
+    };
+    {
+        let mut current = state.current_track.lock().unwrap();
+        *current = Some(previous.clone());
+    }
+
+    play_audio_internal(&previous, &state)?;
+
+    Ok(previous)
 }
 
 #[tauri::command]
@@ -152,6 +176,11 @@ fn play_audio(track: Track, state: State<'_, AudioState>) -> Result<(), String> 
             .current_track
             .lock()
             .map_err(|_| "Failed to lock current_track")?;
+        let mut history = state.history.lock().unwrap();
+
+        if let Some(prev) = current.clone() {
+            history.push(prev);
+        }
         *current = Some(track.clone());
     }
 
@@ -229,6 +258,7 @@ pub fn run() {
             sink: Mutex::new(sink),
             current_track: Mutex::new(None),
             queue: Mutex::new(VecDeque::new()),
+            history: Mutex::new(Vec::new()),
         })
         .setup(|app| {
             start_autostart_loop(app.handle().clone());
@@ -244,6 +274,7 @@ pub fn run() {
             get_current_track,
             queue_add,
             queue_skip,
+            play_previous,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
