@@ -20,8 +20,23 @@
   let showFolderPicker: boolean = $state(false);
 
   let isPaused = $state(false);
+  let ended = $state(false);
 
   let menuElement = $state<HTMLDivElement | undefined>(undefined);
+
+  function handlePlayPause(){
+    if(ended && currentTrack){
+      playAudio(currentTrack);
+      ended = false;
+      return;
+    }
+    
+    if(isPaused){
+      resumeAudio();
+    }else{
+      pauseAudio();
+    }
+  }
 
   async function handleContext(event: MouseEvent, track: Track) {
     event.preventDefault();
@@ -76,7 +91,7 @@
     }
   }
   async function resumeAudio() {
-    console.log("MUSIC PAUSED.");
+    console.log("MUSIC RESUMED.");
     try {
       await invoke("resume_audio");
       isPaused = await invoke("is_audio_paused");
@@ -102,11 +117,11 @@
   }
 
   async function playPrev() {
-    try{
-      const prev = await invoke<Track>('play_previous');
+    try {
+      const prev = await invoke<Track>("play_previous");
       currentTrack = prev;
       isPaused = false;
-    } catch (error){
+    } catch (error) {
       console.warn("No Previous Track");
     }
   }
@@ -146,7 +161,7 @@
       currentTrack = await invoke("get_current_track");
       isPaused = await invoke("is_audio_paused");
 
-      const unlisten = await listen<Track>("autoplay_next", (event) => {
+      const unlistenAutoPlay = await listen<Track>("autoplay_next", (event) => {
         const nextTrack = event.payload;
         console.log("Autoplay is now playing: ", nextTrack.title);
 
@@ -154,7 +169,17 @@
         isPaused = false;
 
         return () => {
-          unlisten();
+          unlistenAutoPlay();
+        };
+      });
+
+      const unlistenEnded = await listen("playback_ended", () => {
+        console.log("No More Songs to be played, playback finished");
+        isPaused = true;
+        ended = true;
+
+        return () => {
+          unlistenEnded();
         };
       });
     } catch (error) {
@@ -195,8 +220,8 @@
     <PlayerBar
       {currentTrack}
       {isPaused}
-      onPause={pauseAudio}
-      onResume={resumeAudio}
+      onPause={handlePlayPause}
+      onResume={handlePlayPause}
       onNext={queueSkip}
       onPrev={playPrev}
     />

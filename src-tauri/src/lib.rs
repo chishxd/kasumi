@@ -223,6 +223,7 @@ fn start_autostart_loop(app_handle: AppHandle) {
             {
                 let state = app_handle.state::<AudioState>();
                 let sink = state.sink.lock().unwrap();
+
                 if sink.empty() {
                     drop(sink);
                     let mut queue = state.queue.lock().unwrap();
@@ -234,7 +235,9 @@ fn start_autostart_loop(app_handle: AppHandle) {
                         }
 
                         let _ = play_audio_internal(&next_track, &state);
-                        let _ = app_handle.emit("autoplay_next", next_track);
+                        let _ = app_handle.emit("autoplay_next", next_track).unwrap();
+                    } else{
+                        app_handle.emit("playback_ended", ()).unwrap();
                     }
                 }
             }
