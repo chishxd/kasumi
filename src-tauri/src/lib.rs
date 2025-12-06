@@ -131,20 +131,23 @@ fn play_previous(state: State<'_, AudioState>) -> Result<Track, String> {
 #[tauri::command]
 fn get_library_tracks(path: String) -> Vec<Track> {
     let mut tracks = Vec::new();
+    let base = Path::new(&path);
 
-    if let Ok(entries) = std::fs::read_dir(&path) {
-        for entry in entries.flatten() {
-            let path = entry.path();
+    collect_tracks(base, &mut tracks);
 
-            if path.is_file() {
-                if let Some(path_str) = path.to_str() {
-                    if let Some(track) = read_track_metadata(path_str) {
-                        tracks.push(track);
-                    }
-                }
-            }
-        }
-    }
+    // if let Ok(entries) = std::fs::read_dir(&path) {
+    //     for entry in entries.flatten() {
+    //         let path = entry.path();
+    //
+    //         if path.is_file() {
+    //             if let Some(path_str) = path.to_str() {
+    //                 if let Some(track) = read_track_metadata(path_str) {
+    //                     tracks.push(track);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     tracks
 }
