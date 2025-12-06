@@ -24,16 +24,16 @@
 
   let menuElement = $state<HTMLDivElement | undefined>(undefined);
 
-  function handlePlayPause(){
-    if(ended && currentTrack){
+  function handlePlayPause() {
+    if (ended && currentTrack) {
       playAudio(currentTrack);
       ended = false;
       return;
     }
-    
-    if(isPaused){
+
+    if (isPaused) {
       resumeAudio();
-    }else{
+    } else {
       pauseAudio();
     }
   }
@@ -205,8 +205,10 @@
 </script>
 
 <main class="container">
-  <header>
-    <p>Welcome to Kasumi</p>
+  <header class="app-header">
+    <h1>Kasumi</h1>
+
+    <button class="choose-btn" onclick={chooseDir}> Choose Directory </button>
   </header>
 
   {#if showFolderPicker}
@@ -238,6 +240,54 @@
 {/if}
 
 <style>
+  .app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 14px 22px;
+    margin-bottom: 8px;
+
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+
+    user-select: none;
+  }
+
+  .app-header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: white;
+  }
+
+  .choose-btn {
+    padding: 8px 16px;
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+
+    cursor: pointer;
+    transition:
+      background 0.2s ease,
+      transform 0.15s ease;
+  }
+
+  .choose-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .choose-btn:active {
+    transform: translateY(1px);
+  }
+
   .container {
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.2);
