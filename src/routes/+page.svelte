@@ -101,6 +101,16 @@
     }
   }
 
+  async function playPrev() {
+    try{
+      const prev = await invoke<Track>('play_previous');
+      currentTrack = prev;
+      isPaused = false;
+    } catch (error){
+      console.warn("No Previous Track");
+    }
+  }
+
   async function loadTracks(dir: string) {
     tracks = await invoke("get_library_tracks", { path: dir });
   }
@@ -188,6 +198,7 @@
       onPause={pauseAudio}
       onResume={resumeAudio}
       onNext={queueSkip}
+      onPrev={playPrev}
     />
   {/if}
 </main>
