@@ -236,7 +236,7 @@ fn start_autostart_loop(app_handle: AppHandle) {
 
                         let _ = play_audio_internal(&next_track, &state);
                         let _ = app_handle.emit("autoplay_next", next_track).unwrap();
-                    } else{
+                    } else {
                         app_handle.emit("playback_ended", ()).unwrap();
                     }
                 }
@@ -244,6 +244,38 @@ fn start_autostart_loop(app_handle: AppHandle) {
             tokio::time::sleep(std::time::Duration::from_millis(200)).await;
         }
     });
+}
+
+fn collect_tracks(path: &Path, out: &mut Vec<Track>) {
+    let entries = match std::fs::read_dir(path) {
+        Ok(e) => e,
+        Err(_) => return,
+    };
+
+    for entry in entries.flatten() {
+        let p = entry.path();
+
+        if p.is_dir() {
+            if let Some(name) = p.file_name().and_then(|s| s.to_str()) {
+                if name.starts_with('.') {
+                    continue;
+                }
+            }
+            collect_tracks(&p, out);
+        } else if p.is_file() {
+            if let Some(ext) = p.extension().and_then(|s| s.to_str()) {
+                let ext_lower = ext.to_lowercase();
+
+                if ["mp3", "flac", "wav", "ogg", "m4a"].contains(&ext_lower.as_str()) {
+                    if let Some(path_str) = p.to_str() {
+                        if let Some(track) = read_track_metadata(path_str) {
+                            out.push(track);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
