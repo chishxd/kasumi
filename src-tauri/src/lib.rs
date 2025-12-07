@@ -3,6 +3,7 @@ use std::io::BufReader;
 use std::sync::Mutex;
 use std::{collections::VecDeque, path::Path};
 use tauri::{Emitter, Manager};
+use tokio::time::Duration;
 
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, State};
@@ -170,6 +171,19 @@ fn play_audio_internal(track: &Track, state: &AudioState) -> Result<(), String> 
 
     sink.append(source);
     sink.play();
+
+    Ok(())
+}
+
+#[tauri::command]
+fn seek_audio(pos: u64, state: State<'_, AudioState>) -> Result<(), String> {
+    let sink = state.sink.lock().map_err(|_| "Failed to lock sink")?;
+
+    sink.try_seek(Duration::from_secs(pos))
+        .map_err(|e| format!("Seek failed: {:?}", e))?;
+
+    let mut progress = state.progress.lock().unwrap();
+    *progress = pos;
 
     Ok(())
 }
@@ -348,6 +362,7 @@ pub fn run() {
             queue_add,
             queue_skip,
             play_previous,
+            seek_audio,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
