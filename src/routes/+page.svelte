@@ -18,6 +18,9 @@
   let store: Store;
   let musicDir: string | null = null;
   let showFolderPicker: boolean = $state(false);
+  let progress = $state(0);
+  let duration = $state(0);
+  let userScrubbing = $state(false);
 
   let isPaused = $state(false);
   let ended = $state(false);
@@ -173,6 +176,16 @@
         };
       });
 
+      const unlistenProgress = await listen<{
+        current: number;
+        duration: number;
+      }>("playback_progress", (event) => {
+        if (!userScrubbing) {
+          progress = event.payload.current;
+        }
+        duration = event.payload.duration;
+      });
+
       const unlistenEnded = await listen("playback_ended", () => {
         console.log("No More Songs to be played, playback finished");
         isPaused = true;
@@ -213,13 +226,16 @@
 
   {#if showFolderPicker}
     <div>
-      <h1>SELECCT MUSIC FOLDER</h1>
+      <h1>SELECT MUSIC FOLDER</h1>
       <button onclick={chooseDir}>Choose</button>
     </div>
   {:else}
     <TrackGrid {tracks} onPlay={playAudio} onMenu={handleContext} />
 
     <PlayerBar
+      {userScrubbing}
+      {duration}
+      {progress}
       {currentTrack}
       {isPaused}
       onPause={handlePlayPause}

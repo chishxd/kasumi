@@ -1,13 +1,27 @@
 <script lang="ts">
   import type { Track } from "$lib/types";
+  import { invoke } from "@tauri-apps/api/core";
 
-  let { currentTrack, isPaused, onPause, onResume, onNext, onPrev } = $props<{
+  let {
+    currentTrack,
+    isPaused,
+    onPause,
+    onResume,
+    onNext,
+    onPrev,
+    progress,
+    duration,
+    userScrubbing,
+  } = $props<{
     currentTrack: Track | null;
     isPaused: boolean;
     onPause: () => void;
     onResume: () => void;
     onNext: () => void;
     onPrev: () => void;
+    progress: number;
+    duration: number;
+    userScrubbing: boolean;
   }>();
 </script>
 
@@ -16,6 +30,24 @@
     <p class="now-title">{currentTrack?.title || "No Music"}</p>
     <p class="now-artist">{currentTrack?.artist || "No artist"}</p>
   </div>
+
+  <input
+    type="range"
+    min="0"
+    max={duration}
+    value={progress}
+    class:user-scrubbing={userScrubbing}
+    oninput={(e) => {
+      const el = e.target as HTMLInputElement;
+      userScrubbing = true;
+      progress = +el.value;
+    }}
+    onchange={(e) => {
+      const el = e.target as HTMLInputElement;
+      userScrubbing = false;
+      invoke("seek_to", { seconds: +el.value });
+    }}
+  />
 
   <div class="controls">
     <button onclick={onPrev} class="player-btn">PREV</button>
