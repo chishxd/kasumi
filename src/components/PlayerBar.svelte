@@ -64,20 +64,25 @@
 
 <style>
   .player-bar input[type="range"] {
-  width: 100%;
-  accent-color: white;
-  cursor: pointer;
-}
+    width: 100%;
+    accent-color: white;
+    cursor: pointer;
+  }
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+  }
 
-.user-scrubbing {
-  /* optional: visual feedback while dragging */
-  opacity: 0.9;
-}
+  .user-scrubbing {
+    opacity: 0.9;
+  }
 
   .player-bar {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
     align-items: center;
-    justify-content: space-between;
+    column-gap: 16px;
 
     padding: 8px 14px;
     border-top: 1px solid rgba(255, 255, 255, 0.25);
@@ -87,19 +92,25 @@
 
   .now-playing {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
     min-width: 0;
+    text-align: left;
   }
 
   .now-title {
     font-size: 0.9rem;
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .now-artist {
     font-size: 0.75rem;
     opacity: 0.7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .player-btn {

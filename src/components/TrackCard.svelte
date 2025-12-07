@@ -23,11 +23,8 @@
   onclick={handlePlayClick}
   oncontextmenu={handleContextMenu}
 >
-  {#if track.coverArt}
-    <img src={track.coverArt} alt={track.title} />
-  {:else}
-    <div class="placeholder">🎵</div>
-  {/if}
+  <img src={track.coverArt ?? "/fallback.png"} alt={track.title} />
+
   <div class="overlay">
     <p class="track-title">{track.title}</p>
     <p class="track-artist">{track.artist}</p>
