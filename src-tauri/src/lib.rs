@@ -247,8 +247,12 @@ fn start_autostart_loop(app_handle: AppHandle) {
                 let state = app_handle.state::<AudioState>();
                 let sink = state.sink.lock().unwrap();
 
-                if sink.empty() {
-                    drop(sink);
+                let is_empty = sink.empty();
+                let is_paused = sink.is_paused();
+
+                drop(sink);
+
+                if is_empty {
                     let mut queue = state.queue.lock().unwrap();
                     if let Some(next_track) = queue.pop_front() {
                         drop(queue);
@@ -267,6 +271,7 @@ fn start_autostart_loop(app_handle: AppHandle) {
                     } else {
                         app_handle.emit("playback_ended", ()).unwrap();
                     }
+                } else if is_paused {
                 } else {
                     {
                         let mut p = state.progress.lock().unwrap();
@@ -292,7 +297,7 @@ fn start_autostart_loop(app_handle: AppHandle) {
                     );
                 }
             }
-            tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         }
     });
 }

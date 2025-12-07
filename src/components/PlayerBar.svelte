@@ -45,7 +45,7 @@
     onchange={(e) => {
       const el = e.target as HTMLInputElement;
       userScrubbing = false;
-      invoke("seek_to", { seconds: +el.value });
+      invoke("seek_audio", { pos: +el.value });
     }}
   />
 
@@ -63,11 +63,17 @@
 </div>
 
 <style>
-  .user-scrubbing {
-    width: 100%;
-    accent-color: white;
-    cursor: pointer;
-  }
+  .player-bar input[type="range"] {
+  width: 100%;
+  accent-color: white;
+  cursor: pointer;
+}
+
+.user-scrubbing {
+  /* optional: visual feedback while dragging */
+  opacity: 0.9;
+}
+
   .player-bar {
     display: flex;
     align-items: center;
