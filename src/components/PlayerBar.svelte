@@ -63,6 +63,11 @@
 </div>
 
 <style>
+  .user-scrubbing {
+    width: 100%;
+    accent-color: white;
+    cursor: pointer;
+  }
   .player-bar {
     display: flex;
     align-items: center;
