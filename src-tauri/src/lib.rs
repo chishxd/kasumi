@@ -30,6 +30,7 @@ pub struct AudioState {
     current_track: Mutex<Option<Track>>,
     queue: Mutex<VecDeque<Track>>,
     history: Mutex<Vec<Track>>,
+    progress: Mutex<u64>,
 }
 
 //A HELPER FUNCTION
@@ -162,6 +163,11 @@ fn play_audio_internal(track: &Track, state: &AudioState) -> Result<(), String> 
 
     let source = Decoder::new(reader).map_err(|e| format!("Codec error: {}", e))?;
 
+    {
+        let mut p = state.progress.lock().unwrap();
+        *p = 0;
+    }
+
     sink.append(source);
     sink.play();
 
@@ -237,11 +243,39 @@ fn start_autostart_loop(app_handle: AppHandle) {
                             *current = Some(next_track.clone());
                         }
 
+                        {
+                            let mut p = state.progress.lock().unwrap();
+                            *p = 0;
+                        }
+
                         let _ = play_audio_internal(&next_track, &state);
                         let _ = app_handle.emit("autoplay_next", next_track).unwrap();
                     } else {
                         app_handle.emit("playback_ended", ()).unwrap();
                     }
+                } else {
+                    {
+                        let mut p = state.progress.lock().unwrap();
+                        *p += 1;
+                    }
+
+                    let current = {
+                        let p = state.progress.lock().unwrap();
+                        *p
+                    };
+
+                    let duration = {
+                        let c = state.current_track.lock().unwrap();
+                        c.as_ref().map(|t| t.duration_seconds).unwrap_or(0);
+                    };
+
+                    let _ = app_handle.emit(
+                        "playback_progress",
+                        serde_json::json!({
+                            "current": current,
+                            "duration": duration
+                        }),
+                    );
                 }
             }
             tokio::time::sleep(std::time::Duration::from_millis(200)).await;
@@ -297,6 +331,7 @@ pub fn run() {
             current_track: Mutex::new(None),
             queue: Mutex::new(VecDeque::new()),
             history: Mutex::new(Vec::new()),
+            progress: Mutex::new(0),
         })
         .setup(|app| {
             start_autostart_loop(app.handle().clone());
